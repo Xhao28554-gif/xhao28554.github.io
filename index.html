@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>哈基米防冻结数据处理器</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1a2e;font-family:"PingFang SC",system-ui,Helvetica,Arial,sans-serif;color:#fff;min-height:100vh;padding:20px;display:flex;justify-content:center;align-items:center}
+.container{width:100%;max-width:800px;background:#22223b;border-radius:16px;padding:30px;box-shadow:0 8px 32px rgba(0,0,0,0.3);border:1px solid #444}
+h1{text-align:center;color:#ff4d4d;margin-bottom:30px;font-size:26px;text-shadow:0 0 10px rgba(255,77,77,0.5)}
+.tip-top{text-align:center;color:#ffd700;font-size:16px;margin-bottom:15px}
+.input-box{width:100%;min-height:150px;background:#2d2d44;border:1px solid #555;border-radius:8px;padding:15px;color:#fff;font-size:15px;line-height:1.5;resize:vertical;margin-bottom:20px;outline:none}
+.btn-group{display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap}
+.btn{flex:1;min-height:50px;border-radius:8px;border:none;font-size:16px;font-weight:bold;cursor:pointer;transition:all 0.2s}
+.btn:active{transform:scale(0.95);opacity:0.9}
+.btn-process{background:linear-gradient(135deg,#6c5ce7,#e84393);color:#fff}
+.btn-clear{background:#333;color:#ffd700;border:1px solid #ffd700}
+.tip-copy{text-align:center;color:#ffd700;font-size:14px;margin-bottom:15px}
+.result-box{width:100%;min-height:200px;background:#2d4a3e;border:1px solid #4a9a66;border-radius:8px;padding:15px;color:#fff;font-size:15px;line-height:1.6;white-space:pre-wrap;word-break:break-all;margin-bottom:20px;outline:none}
+.btn-copy{display:block;width:200px;height:50px;margin:0 auto 20px;background:#333;color:#ffd700;border:1px solid #ffd700;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
+.btn-copy:active{transform:scale(0.95);opacity:0.9;background:#444}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#27ae60;color:#fff;padding:12px 24px;border-radius:8px;display:none;z-index:999;font-size:15px}
+.footer{text-align:center;color:#ff4d4d;font-size:14px;margin-top:20px;opacity:0.8}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>哈基米防冻结数据处理器</h1>
+  <div class="tip-top">粘贴链接/数据号 | 哈基米守护 批量处理+一键复制</div>
+  <textarea id="inputBox" class="input-box" placeholder="在此粘贴多组链接/数据号，哈基米帮你处理..."></textarea>
+
+  <div class="btn-group">
+    <button class="btn btn-process" id="processBtn">哈基米处理</button>
+    <button class="btn btn-clear" id="clearBtn">清空</button>
+  </div>
+
+  <div class="tip-copy">点击结果框/复制按钮，一键复制全部内容</div>
+  <textarea id="resultBox" class="result-box" readonly></textarea>
+  <button class="btn-copy" id="copyFullBtn">复制全部内容</button>
+  <div class="toast" id="toast">复制成功！哈基米贴贴</div>
+  <div class="footer">哈基米自动处理 | 数据防冻结 | 全机型适配</div>
+</div>
+
+<script>
+function toast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(()=>t.style.display='none', 1500);
+}
+
+function randomCase(str){
+    return str.split('').map(c=>/[a-fA-F0-9]/.test(c) ? (Math.random()>0.5?c.toUpperCase():c.toLowerCase()) : c).join('');
+}
+
+function process(text){
+    return text.replace(/access_token=([a-fA-F0-9]+)/gi, (m,tk)=>'access_token='+randomCase(tk));
+}
+
+function handleCopy(){
+    var t = document.getElementById('resultBox').value.trim();
+    if(!t) return toast('请先放入数据哦');
+    if(navigator.clipboard){
+        navigator.clipboard.writeText(t).then(()=>toast('复制成功！哈基米贴贴')).catch(()=>fb(t));
+    }else{
+        fb(t);
+    }
+}
+
+function fb(t){
+    var e = document.createElement('textarea');
+    e.value = t;
+    e.style.opacity = 0;
+    document.body.appendChild(e);
+    e.select();
+    document.execCommand('copy');
+    document.body.removeChild(e);
+    toast('复制成功！哈基米贴贴');
+}
+
+document.getElementById('processBtn').onclick = function(){
+    var v = document.getElementById('inputBox').value.trim();
+    if(!v) return toast('请先粘贴内容');
+    document.getElementById('resultBox').value = process(v);
+    toast('哈基米处理完成');
+};
+
+document.getElementById('clearBtn').onclick = function(){
+    document.getElementById('inputBox').value = '';
+    document.getElementById('resultBox').value = '';
+    toast('已清空');
+};
+
+document.getElementById('copyFullBtn').onclick = handleCopy;
+document.getElementById('resultBox').onclick = handleCopy;
+</script>
+</body>
+</html>
